@@ -8,6 +8,7 @@
 
 #include <stdlib.h>
 #include <iostream>
+#include <fstream>
 #include <unistd.h>
 #include <stdio.h>
 #include <set>
@@ -59,7 +60,7 @@ std::vector<std::pair<int, unsigned long>> removeDuplicates(std::vector<std::pai
     for( unsigned i = 0; i < size; ++i ) uniqueSet.insert( freqCountList[i] );
     freqCountList.assign( uniqueSet.begin(), uniqueSet.end() );
     
-    std::cout << "Number of elements in set:" << freqCountList.size() << "\n" ;
+    //std::cout << "Number of elements in set:" << freqCountList.size() << "\n" ;
     
     return freqCountList;
     
@@ -70,18 +71,32 @@ void printSet(std::vector<std::pair<int, unsigned long>> &set) {
     std::vector<std::pair<int, unsigned long>>::size_type sz = set.size();
     
     for (unsigned i=0; i<sz; i++) {
-        std::cout << "barcode is:" << set[i].first << "--" << "frequency is" << set[i].second << "\n" ;
+        std::cout << "barcode is: " << set[i].first << "," << " frequency is " << set[i].second << "\n" ;
      }
 }
 
-void freeSet(std::vector<std::pair<int, unsigned long>> &set) {
+void setToFile(std::vector<std::pair<int, unsigned long>> &set) {
     
     std::vector<std::pair<int, unsigned long>>::size_type sz = set.size();
     
+    ofstream barCodeCSV;
+    barCodeCSV.open("barCodeFreq.csv");
+    
     for (unsigned i=0; i<sz; i++) {
-        delete[] &set[i];
-    }    
+        barCodeCSV << set[i].first << ","  << set[i].second << "\n" ;
+    }
+    
+    barCodeCSV.close();
 }
+
+//void freeSet(std::vector<std::pair<int, unsigned long>> &set) {
+//    
+//    std::vector<std::pair<int, unsigned long>>::size_type sz = set.size();
+//    
+//    for (unsigned i=0; i<sz; i++) {
+//        delete[] &set[i];
+//    }
+//}
 
 
 
@@ -105,7 +120,7 @@ int main() {
     map<int32_t, string> chromIDNameMap;
     for(size_t i=0; i<refVector.size(); i++) {
         chromIDNameMap[reader.GetReferenceID(refVector[i].RefName)] = refVector[i].RefName;
-        cout << refVector[i].RefName;
+        cout << refVector[i].RefName  << "\n";
     }
     
     const SamHeader header = reader.GetHeader();
@@ -115,19 +130,19 @@ int main() {
     BamAlignment al;
     int i = 0;
     multiset_t barCodes;
+    
     // generates a multiset of all of the allignemnet map qualities
     // allignment map quality is a place holder till I can get the barcodes
     while ( reader.GetNextAlignment(al) ) {
         if ( al.MapQuality >= 90 )
-            barCodes.insert(al.MapQuality);
+            barCodes.insert(al.GetEndPosition());
             i++;
         }
     
     std::vector<std::pair<int, unsigned long>> freqCount = getFreqCount(barCodes);
     std::vector<std::pair<int, unsigned long>> uniqueSet = removeDuplicates(freqCount);
-    printSet(uniqueSet);
-    
-    
+    //printSet(uniqueSet);
+    setToFile(uniqueSet);
     
     // close the reader & writer
     reader.Close();
