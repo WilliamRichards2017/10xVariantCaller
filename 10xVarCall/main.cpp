@@ -59,13 +59,19 @@ std::vector<std::pair<int, unsigned long>> getFreqCount(multiset_t &multiset)
 // a set or by removing non-unique elements directly fomr a vector
 //
 std::vector<std::pair<int, unsigned long>> removeDuplicates(std::vector<std::pair<int, unsigned long>>  &freqCountList) {
+
     
-   // set<int> s;
-   // unsigned size = vec.size();
-   // for( unsigned i = 0; i < size; ++i ) s.insert( vec[i] );
-   // vec.assign( s.begin(), s.end() );
+    //Idea taken from http://stackoverflow.com/questions/1041620/whats-the-most-efficient-way-to-erase-duplicates-and-sort-a-vector
     
+    set<pair<int, unsigned long>> uniqueSet;
+    unsigned long size = freqCountList.size();
+    for( unsigned i = 0; i < size; ++i ) uniqueSet.insert( freqCountList[i] );
+    freqCountList.assign( uniqueSet.begin(), uniqueSet.end() );
     return freqCountList;
+    
+}
+
+void printSet(std::vector<std::pair<int, unsigned long>>) {
     
 }
 
@@ -109,7 +115,9 @@ int main() {
             i++;
         }
     
-     std::vector<std::pair<int, unsigned long>> freqCount = getFreqCount(barCodes);
+    std::vector<std::pair<int, unsigned long>> freqCount = getFreqCount(barCodes);
+    std::vector<std::pair<int, unsigned long>> uniqueSet = removeDuplicates(freqCount);
+    
     
     // close the reader & writer
     reader.Close();
