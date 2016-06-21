@@ -41,14 +41,8 @@ std::vector<std::pair<int, unsigned long>> getFreqCount(multiset_t &multiset)
     std::vector<std::pair<int, unsigned long>> pairList{};
     for (auto element: multiset) {
         std::pair<int, unsigned long> barCodeCount = std::make_pair(element, multiset.count(element));
-        std::cout << barCodeCount.first << ":" << barCodeCount.second << " ";
+       // std::cout << barCodeCount.first << ":" << barCodeCount.second << " ";
         pairList.push_back(barCodeCount);
-    }
-    
-    std::vector<std::pair<int, unsigned long>>::size_type sz = pairList.size();
-    
-    for (unsigned i=0; i<sz; i++) {
-        std::cout << "first is:" << pairList[i].first << "\n";
     }
     return pairList;
 }
@@ -59,20 +53,34 @@ std::vector<std::pair<int, unsigned long>> getFreqCount(multiset_t &multiset)
 // a set or by removing non-unique elements directly fomr a vector
 //
 std::vector<std::pair<int, unsigned long>> removeDuplicates(std::vector<std::pair<int, unsigned long>>  &freqCountList) {
-
-    
-    //Idea taken from http://stackoverflow.com/questions/1041620/whats-the-most-efficient-way-to-erase-duplicates-and-sort-a-vector
     
     set<pair<int, unsigned long>> uniqueSet;
     unsigned long size = freqCountList.size();
     for( unsigned i = 0; i < size; ++i ) uniqueSet.insert( freqCountList[i] );
     freqCountList.assign( uniqueSet.begin(), uniqueSet.end() );
+    
+    std::cout << "Number of elements in set:" << freqCountList.size() << "\n" ;
+    
     return freqCountList;
     
 }
 
-void printSet(std::vector<std::pair<int, unsigned long>>) {
+void printSet(std::vector<std::pair<int, unsigned long>> &set) {
     
+    std::vector<std::pair<int, unsigned long>>::size_type sz = set.size();
+    
+    for (unsigned i=0; i<sz; i++) {
+        std::cout << "barcode is:" << set[i].first << "--" << "frequency is" << set[i].second << "\n" ;
+     }
+}
+
+void freeSet(std::vector<std::pair<int, unsigned long>> &set) {
+    
+    std::vector<std::pair<int, unsigned long>>::size_type sz = set.size();
+    
+    for (unsigned i=0; i<sz; i++) {
+        delete[] &set[i];
+    }    
 }
 
 
@@ -93,7 +101,7 @@ int main() {
         }
     
     const BamTools::RefVector refVector = reader.GetReferenceData();
-    cout << refVector.size() << "\n";
+    //cout << refVector.size() << "\n";
     map<int32_t, string> chromIDNameMap;
     for(size_t i=0; i<refVector.size(); i++) {
         chromIDNameMap[reader.GetReferenceID(refVector[i].RefName)] = refVector[i].RefName;
@@ -117,6 +125,8 @@ int main() {
     
     std::vector<std::pair<int, unsigned long>> freqCount = getFreqCount(barCodes);
     std::vector<std::pair<int, unsigned long>> uniqueSet = removeDuplicates(freqCount);
+    printSet(uniqueSet);
+    
     
     
     // close the reader & writer
