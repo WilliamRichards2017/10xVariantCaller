@@ -20,7 +20,7 @@
 #include "api/BamMultiReader.h"
 #include "api/BamWriter.h"
 
-#define SIZE 95725;
+#define SIZE 91579;
 
 
 
@@ -98,26 +98,21 @@ int main() {
     const RefVector references = reader.GetReferenceData();
 
     // iterate through all alignments, only keeping ones with high map quality
-        BamAlignment al;
-        int i = 0;
-       multiset_t barCodes;
-        // generates a multiset of all of the allignemnet map qualities
-        //
-        while ( reader.GetNextAlignment(al) ) {
-            if ( al.MapQuality >= 90 )
-                
-                barCodes.insert(al.MapQuality);
-                i++;
+    BamAlignment al;
+    int i = 0;
+    multiset_t barCodes;
+    // generates a multiset of all of the allignemnet map qualities
+    // allignment map quality is a place holder till I can get the barcodes
+    while ( reader.GetNextAlignment(al) ) {
+        if ( al.MapQuality >= 90 )
+            barCodes.insert(al.MapQuality);
+            i++;
         }
     
-
      std::vector<std::pair<int, unsigned long>> freqCount = getFreqCount(barCodes);
     
-    
-    
-    
-        // close the reader & writer
-        reader.Close();
+    // close the reader & writer
+    reader.Close();
     return 0;
     
 }
