@@ -20,9 +20,9 @@
 #include <api/api_global.h>
 #include "api/BamMultiReader.h"
 #include "api/BamWriter.h"
+#include <api/SamReadGroupDictionary.h>
 
 #define SIZE 91579;
-
 
 
 using namespace std;
@@ -38,7 +38,6 @@ typedef std::multiset<int> multiset_t;
 // second elemnt of pair returns a count of the barcode
 std::vector<std::pair<int, unsigned long>> getFreqCount(multiset_t &multiset)
 {
-
     std::vector<std::pair<int, unsigned long>> pairList{};
     for (auto element: multiset) {
         std::pair<int, unsigned long> barCodeCount = std::make_pair(element, multiset.count(element));
@@ -89,17 +88,6 @@ void setToFile(std::vector<std::pair<int, unsigned long>> &set) {
     barCodeCSV.close();
 }
 
-//void freeSet(std::vector<std::pair<int, unsigned long>> &set) {
-//    
-//    std::vector<std::pair<int, unsigned long>>::size_type sz = set.size();
-//    
-//    for (unsigned i=0; i<sz; i++) {
-//        delete[] &set[i];
-//    }
-//}
-
-
-
 
 int main() {
     
@@ -128,13 +116,14 @@ int main() {
 
     // iterate through all alignments, only keeping ones with high map quality
     BamAlignment al;
+    SamReadGroup srg;
     int i = 0;
     multiset_t barCodes;
-    
+
     // generates a multiset of all of the allignemnet map qualities
     // allignment map quality is a place holder till I can get the barcodes
     while ( reader.GetNextAlignment(al) ) {
-        if ( al.MapQuality >= 90 )
+        //if ( al.MapQuality >= 90 )
             barCodes.insert(al.GetEndPosition());
             i++;
         }
@@ -143,6 +132,8 @@ int main() {
     std::vector<std::pair<int, unsigned long>> uniqueSet = removeDuplicates(freqCount);
     //printSet(uniqueSet);
     setToFile(uniqueSet);
+    
+
     
     // close the reader & writer
     reader.Close();
