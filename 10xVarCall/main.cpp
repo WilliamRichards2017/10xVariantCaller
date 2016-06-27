@@ -91,7 +91,7 @@ void setToFile(std::vector<std::pair<int, unsigned long>> &set) {
 
 int main() {
     
-    const std::string &filename = "/Users/awr/Desktop/10xVarCall/10xVarCall/Bams/bam1.bam";
+    const std::string &filename = "/Users/awr/Desktop/10xVariantCaller/10xVarCall/Bams/bam1.bam";
     
     string outputFilename;
     
