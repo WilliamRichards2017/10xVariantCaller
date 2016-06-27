@@ -38,12 +38,12 @@ typedef std::multiset<int> multiset_t;
 // second elemnt of pair returns a count of the barcode
 std::vector<std::pair<int, unsigned long>> getFreqCount(multiset_t &multiset)
 {
-    std::vector<std::pair<int, unsigned long>> pairList{};
-    for (auto element: multiset) {
-        std::pair<int, unsigned long> barCodeCount = std::make_pair(element, multiset.count(element));
-       // std::cout << barCodeCount.first << ":" << barCodeCount.second << " ";
+    std::vector<std::pair<int, unsigned long>> pairList;
+     for (multiset_t::iterator  it = multiset.begin(); it!=multiset.end(); it++) {
+        std::pair<int, unsigned long> barCodeCount = std::make_pair(*it, multiset.count(*it));
+        //std::cout << barCodeCount.first << ":" << barCodeCount.second << " ";
         pairList.push_back(barCodeCount);
-    }
+     }
     return pairList;
 }
 
@@ -130,7 +130,7 @@ int main() {
     
     std::vector<std::pair<int, unsigned long>> freqCount = getFreqCount(barCodes);
     std::vector<std::pair<int, unsigned long>> uniqueSet = removeDuplicates(freqCount);
-    //printSet(uniqueSet);
+    printSet(uniqueSet);
     setToFile(uniqueSet);
     
 
