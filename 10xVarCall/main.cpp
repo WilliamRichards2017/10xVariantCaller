@@ -123,16 +123,22 @@ int main() {
     // generates a multiset of all of the allignemnet map qualities
     // allignment map quality is a place holder till I can get the barcodes
     while ( reader.GetNextAlignment(al) ) {
-        //if ( al.MapQuality >= 90 )
+        if ( al.MapQuality >= 90 ) {
             barCodes.insert(al.TagData);
-            //std::cout << al.TagData << "\n";
+       
+      //cannot get tag with sample dataset because allignment is core only
+      //    uint32_t bx;
+      //  if (al.GetTag("BX", bx)) {
+      //      barCodes.insert(bx)
+      //  }
+        }
             i++;
         }
     
     std::vector<std::pair<string, unsigned long>> freqCount = getFreqCount(barCodes);
     std::vector<std::pair<string, unsigned long>> uniqueSet = removeDuplicates(freqCount);
-    printSet(uniqueSet);
-    setToFile(uniqueSet);
+    //printSet(uniqueSet);
+    //setToFile(uniqueSet);
     
 
     
