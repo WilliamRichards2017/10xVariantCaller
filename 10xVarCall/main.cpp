@@ -29,18 +29,18 @@ using namespace std;
 using namespace BamTools;
 
 
-typedef std::multiset<int> multiset_t;
+typedef std::multiset<string> multiset_t;
 
 
 
 // Returns a Vector of pairs (allocated on heap)
 // first element of pair contains a barcode
 // second elemnt of pair returns a count of the barcode
-std::vector<std::pair<int, unsigned long>> getFreqCount(multiset_t &multiset)
+std::vector<std::pair<string, unsigned long>> getFreqCount(multiset_t &multiset)
 {
-    std::vector<std::pair<int, unsigned long>> pairList;
+    std::vector<std::pair<string, unsigned long>> pairList;
      for (multiset_t::iterator  it = multiset.begin(); it!=multiset.end(); it++) {
-        std::pair<int, unsigned long> barCodeCount = std::make_pair(*it, multiset.count(*it));
+        std::pair<string, unsigned long> barCodeCount = std::make_pair(*it, multiset.count(*it));
         //std::cout << barCodeCount.first << ":" << barCodeCount.second << " ";
         pairList.push_back(barCodeCount);
      }
@@ -52,9 +52,9 @@ std::vector<std::pair<int, unsigned long>> getFreqCount(multiset_t &multiset)
 // Because number of duplicates is large, this approach is more efficient than manually converting data to
 // a set or by removing non-unique elements directly fomr a vector
 //
-std::vector<std::pair<int, unsigned long>> removeDuplicates(std::vector<std::pair<int, unsigned long>>  &freqCountList) {
+std::vector<std::pair<string, unsigned long>> removeDuplicates(std::vector<std::pair<string, unsigned long>>  &freqCountList) {
     
-    set<pair<int, unsigned long>> uniqueSet;
+    set<pair<string, unsigned long>> uniqueSet;
     unsigned long size = freqCountList.size();
     for( unsigned i = 0; i < size; ++i ) uniqueSet.insert( freqCountList[i] );
     freqCountList.assign( uniqueSet.begin(), uniqueSet.end() );
@@ -65,18 +65,18 @@ std::vector<std::pair<int, unsigned long>> removeDuplicates(std::vector<std::pai
     
 }
 
-void printSet(std::vector<std::pair<int, unsigned long>> &set) {
+void printSet(std::vector<std::pair<string, unsigned long>> &set) {
     
-    std::vector<std::pair<int, unsigned long>>::size_type sz = set.size();
+    std::vector<std::pair<string, unsigned long>>::size_type sz = set.size();
     
     for (unsigned i=0; i<sz; i++) {
         std::cout << "barcode is: " << set[i].first << "," << " frequency is " << set[i].second << "\n" ;
      }
 }
 
-void setToFile(std::vector<std::pair<int, unsigned long>> &set) {
+void setToFile(std::vector<std::pair<string, unsigned long>> &set) {
     
-    std::vector<std::pair<int, unsigned long>>::size_type sz = set.size();
+    std::vector<std::pair<string, unsigned long>>::size_type sz = set.size();
     
     ofstream barCodeCSV;
     barCodeCSV.open("barCodeFreq.csv");
@@ -124,12 +124,13 @@ int main() {
     // allignment map quality is a place holder till I can get the barcodes
     while ( reader.GetNextAlignment(al) ) {
         //if ( al.MapQuality >= 90 )
-            barCodes.insert(al.GetEndPosition());
+            barCodes.insert(al.TagData);
+            //std::cout << al.TagData << "\n";
             i++;
         }
     
-    std::vector<std::pair<int, unsigned long>> freqCount = getFreqCount(barCodes);
-    std::vector<std::pair<int, unsigned long>> uniqueSet = removeDuplicates(freqCount);
+    std::vector<std::pair<string, unsigned long>> freqCount = getFreqCount(barCodes);
+    std::vector<std::pair<string, unsigned long>> uniqueSet = removeDuplicates(freqCount);
     printSet(uniqueSet);
     setToFile(uniqueSet);
     
