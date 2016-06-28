@@ -1,93 +1,56 @@
-##Line Graph showing the coverage of barcodes across the genome
-##Approximates bargraph with large data-set, loads fast
+###=====================================
+### Creates visualations of Barcode Data
+### By Will Richards
+###=====================================
+
 import matplotlib as mpl
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cbook as cbook
-
-def read_datafile(file_name):
-    data = np.loadtxt(file_name, delimiter=',', skiprows=1)
-    return data
-
-data = read_datafile('/Users/awr/Desktop/10xVariantCaller/10xVarCall/barCodeFreq.csv')
-
-x= data[:,0]
-y= data[:,1]
-
-fig = plt.figure()
-
-ax1 = fig.add_subplot(111)
-
-ax1.set_title("Barcode Coverage")
-ax1.set_xlabel('Barcode ID')
-ax1.set_ylabel('Frequency')
-
-ax1.plot(x,y, c='r')
-
-leg = ax1.legend()
-
-plt.show()
+import pylab as plimport collections
+from collections import Counter
 
 
-###Creates histogram of the count of the frequencies of barcodes
-import collections
-counter=collections.Counter(y)
+f = open('/Users/awr/Desktop/10xVariantCaller/10xVarCall/barCodeFreq.csv', "r")
+lines = f.read().split("\n") # "\r\n" if needed
+
+x = []
+y = []
+
+for line in lines:
+    if line != "": # add other needed checks to skip titles
+        cols = line.split(",")
+        x.append(cols[0])
+        y.append(cols[1])
 
 
-print counter.keys()
-print counter.values()
 
-barCodeFreq = counter.keys()
-print barCodeFreq
+###==============================================================
+### Creates a bargraph showing the count of each unique barcode
+###===============================================================
+import pylab as pl
 
-minBin = int(np.amin(barCodeFreq))
-maxBin = int(np.amax(barCodeFreq))
+x_axis = range(0,len(x))
+xTicks = x
+pl.xticks(range(len(x)), xTicks, rotation=45) #writes strings with 45 degree angle
+pl.plot(x_axis,y,'*')
+pl.show()
 
-bins = np.linspace(minBin, maxBin, num=5)
 
-plt.hist(y, bins)
-plt.xticks(range(minBin, maxBin))
+
+###========================================================================
+###Creates A Histogram of the count of the frequency of each unique barcode
+###========================================================================
+
+y=map(int,y)
+labels, values = zip(*Counter(y).items())
+indexes = np.arange(len(labels))
+width = 1
 
 plt.title("Barcode Frequency Distribution")
 plt.xlabel('Barcode Frequency')
 plt.ylabel('Count of Frequencies')
-
+plt.xticks(indexes + width * 0.5  , labels)
+plt.bar(indexes, values, width )
 plt.show()
 
-
-
-
-###Creates an actual bargraph - literally the slowest thing ever
-###Line graph with this many categories approximatesa barGraph, and is probably a better choice
-import matplotlib as mpl
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.cbook as cbook
-###%matplotlib inline
-
-def read_datafile(file_name):
-    data = np.loadtxt(file_name, delimiter=',', skiprows=1)
-    return data
-
-data = read_datafile('/Users/awr/Desktop/10xVarCall/10xVarCall/barCodeFreq.csv')
-
-x= data[:,0]
-y= data[:,1]
-
-plt.bar(x,y)
-
-fig = plt.gcf()
-
-#fig = plt.figure()
-
-#ax1 = fig.add_subplot(111)
-
-#ax1.set_title("Barcode Coverage")
-#ax1.set_xlabel('Barcode ID')
-#ax1.set_ylabel('Frequency')
-
-#ax1.plot(x,y, c='r')
-
-#leg = ax1.legend()
-
-plt.show()
