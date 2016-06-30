@@ -1,3 +1,4 @@
+
 //
 //  main.cpp
 //  10xVarCall
@@ -14,6 +15,8 @@
 #include <set>
 #include <vector>
 #include <utility>
+#include <unordered_map>
+#include <string>
 
 
 #include <shared/bamtools_global.h>
@@ -22,86 +25,54 @@
 #include "api/BamWriter.h"
 #include <api/SamReadGroupDictionary.h>
 
-#define SIZE 91579;
+int SIZE = 91579;
 
 
 using namespace std;
 using namespace BamTools;
 
 
-typedef std::multiset<string> multiset_t;
+
+typedef std::unordered_map<std::string,int> hashmap_t;
 
 
 
-// Returns a Vector of pairs (allocated on heap)
-// first element of pair contains a barcode
-// second elemnt of pair returns a count of the barcode
-std::vector<std::pair<string, unsigned long>> getFreqCount(multiset_t &multiset)
-{
-    std::vector<std::pair<string, unsigned long>> pairList;
-     for (multiset_t::iterator  it = multiset.begin(); it!=multiset.end(); it++) {
-        std::pair<string, unsigned long> barCodeCount = std::make_pair(*it, multiset.count(*it));
-        //std::cout << barCodeCount.first << ":" << barCodeCount.second << " ";
-        pairList.push_back(barCodeCount);
-     }
-    return pairList;
-}
-
-
-// This function removes duplicates by converting it to a set, then dump set back into vector
-// Because number of duplicates is large, this approach is more efficient than manually converting data to
-// a set or by removing non-unique elements directly fomr a vector
-//
-std::vector<std::pair<string, unsigned long>> removeDuplicates(std::vector<std::pair<string, unsigned long>>  &freqCountList) {
-    
-    set<pair<string, unsigned long>> uniqueSet;
-    unsigned long size = freqCountList.size();
-    for( unsigned i = 0; i < size; ++i ) uniqueSet.insert( freqCountList[i] );
-    freqCountList.assign( uniqueSet.begin(), uniqueSet.end() );
-    
-    //std::cout << "Number of elements in set:" << freqCountList.size() << "\n" ;
-    
-    return freqCountList;
-    
-}
-
-void printSet(std::vector<std::pair<string, unsigned long>> &set) {
-    
-    std::vector<std::pair<string, unsigned long>>::size_type sz = set.size();
-    
-    for (unsigned i=0; i<sz; i++) {
-        std::cout << "barcode is: " << set[i].first << "," << " frequency is " << set[i].second << "\n" ;
-     }
-}
-
-void setToFile(std::vector<std::pair<string, unsigned long>> &set) {
-    
-    std::vector<std::pair<string, unsigned long>>::size_type sz = set.size();
+void hashMaptoFile(hashmap_t &hashmap) {
+    hashmap_t::iterator hashIt;
     
     ofstream barCodeCSV;
     barCodeCSV.open("barCodeFreq.csv");
     
-    for (unsigned i=0; i<sz; i++) {
-        barCodeCSV << set[i].first << ","  << set[i].second << "\n" ;
+    for (hashIt = hashmap.begin(); hashIt != hashmap.end(); hashIt++) {
+        barCodeCSV << hashIt->first << ","  << hashIt->second << "\n" ;
     }
-    
-    barCodeCSV.close();
 }
+
+void printHashMap(hashmap_t &hashmap) {
+    hashmap_t::iterator hashIt;
+    
+    for (hashIt = hashmap.begin(); hashIt != hashmap.end(); hashIt++) {
+        cout << "barcode is: "  << hashIt->first << "frequency is: "  << hashIt->second << "\n" ;
+    }
+}
+
+
+
 
 
 int main() {
     
-    const std::string &filename = "/Users/awr/Desktop/10xVariantCaller/10xVarCall/Bams/bam1.bam";
+    const std::string &filename = "/uufs/chpc.utah.edu/common/home/u0401321/TenX/bams/HG00512_WGS_phased_possorted_bam.bam";
     
     string outputFilename;
     
     BamTools::BamReader reader;
     reader.Open(filename);
     cout << filename << "\n";
-        if(!reader.IsOpen()) {
-            cout<<"{\"status\":\"error\", \"message\":\"Cannot open the specified file\"}"<<endl;
-            exit(1);
-        }
+    if(!reader.IsOpen()) {
+        cout<<"{\"status\":\"error\", \"message\":\"Cannot open the specified file\"}"<<endl;
+        exit(1);
+    }
     
     const BamTools::RefVector refVector = reader.GetReferenceData();
     //cout << refVector.size() << "\n";
@@ -113,43 +84,60 @@ int main() {
     
     const SamHeader header = reader.GetHeader();
     const RefVector references = reader.GetReferenceData();
-
-    // iterate through all alignments, only keeping ones with high map quality
+    
     BamAlignment al;
-    SamReadGroup srg;
     int i = 0;
-    multiset_t barCodes;
-
-    // generates a multiset of all of the allignemnet map qualities
-    // allignment map quality is a place holder till I can get the barcodes
-    while ( reader.GetNextAlignment(al) ) {
-        if ( al.MapQuality >= 90 ) {
-            barCodes.insert(al.TagData);
-       
-      //cannot get tag with sample dataset because allignment is core only
-      //    uint32_t bx;
-      //  if (al.GetTag("BX", bx)) {
-      //      barCodes.insert(bx)
-      //  }
+    hashmap_t hashMap;
+    
+    // iterate though alignnets, only keeping one with a high-ish quality
+    
+    // Generates a multiset of all barcodes
+    
+    while ( reader.GetNextAlignment(al)) {
+        
+        if ( al.MapQuality >= 10 ) {
+            
+            string  bx;
+            
+            if (al.GetTag("BX", bx)) {
+                
+                // barCodes.insert(bx);
+                
+                if (hashMap.count(bx) == 1) {
+                    
+                    // cout << "key already exists";
+                    
+                    hashMap.find(bx)->second++;
+                    
+                }
+                
+                else {
+                    
+                    //hashMap.insert(bx, 1);
+                    
+                    hashMap[bx] = 1;
+                    
+                }
+                
+            }
+            
         }
-            i++;
-        }
+        
+        i++;
+        
+    }
     
-    std::vector<std::pair<string, unsigned long>> freqCount = getFreqCount(barCodes);
-    std::vector<std::pair<string, unsigned long>> uniqueSet = removeDuplicates(freqCount);
-    //printSet(uniqueSet);
-    //setToFile(uniqueSet);
     
-
     
-    // close the reader & writer
+    printHashMap(hashMap);
+    
+    hashMaptoFile(hashMap);
+    
+    // close the reader & writer                                                                                                                       
+    
     reader.Close();
-    return 0;
     
-}
-
-
-
+    return 0;
 
 
 

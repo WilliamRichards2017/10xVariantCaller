@@ -7,7 +7,8 @@ import matplotlib as mpl
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cbook as cbook
-import pylab as plimport collections
+import pylab as pl
+import collections
 from collections import Counter
 
 
@@ -20,7 +21,7 @@ y = []
 for line in lines:
     if line != "": # add other needed checks to skip titles
         cols = line.split(",")
-        x.append(cols[0])
+        x.append(cols[0])y
         y.append(cols[1])
 
 
